@@ -16,30 +16,29 @@ ENV WEBSAFETY_IN_DOCKER "True"
 
 # install python libs and apache with modwsgi
 RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
-    apt-get install -y --no-install-recommends apt-utils \
-    apache2 libapache2-mod-wsgi-py3 iproute2 \
-    python3-pip python3-dev python3-setuptools \
+    apt-get install -y --no-install-recommends \
+    apt-utils apache2 libapache2-mod-wsgi-py3 iproute2 \
+    python3-pip python3-dev python3-setuptools python3-venv \
     sudo curl gnupg libsasl2-dev libldap2-dev libssl-dev g++ \
-    krb5-user \
-    sqlite && \
+    krb5-user sqlite3 && \
     a2dissite 000-default && a2enmod ssl && \
     curl https://packages.diladele.com/diladele_pub.asc -s -o diladele_pub.asc && \
     APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add diladele_pub.asc && rm diladele_pub.asc && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    pip3 install --upgrade pip && \
-    pip3 install wheel && \
-    python3 -m pip install \
-         django==4.1.2 \
-         pytz \
-         requests \
-         pandas \
-         PyYAML \
-         psutil \
-         tld \
-         jinja2 \
-         msal pyOpenSSL cryptography google-auth google-auth-oauthlib && \
-    pip3 uninstall ldap ldap3 python-ldap || true && \
-    pip3 install python-ldap
+    python3 -m pip install --upgrade pip --break-system-packages && \
+    python3 -m pip install wheel --break-system-packages && \
+    python3 -m pip install --break-system-packages \
+        django==4.1.2 \
+        pytz \
+        requests \
+        pandas \
+        PyYAML \
+        psutil \
+        tld \
+        jinja2 \
+        msal pyOpenSSL cryptography google-auth google-auth-oauthlib && \
+    python3 -m pip uninstall -y ldap ldap3 python-ldap || true && \
+    python3 -m pip install python-ldap --break-system-packages
 
 
 RUN echo "deb https://squid57.diladele.com/ubuntu/ focal main" > /etc/apt/sources.list.d/squid57.diladele.com.list && \
