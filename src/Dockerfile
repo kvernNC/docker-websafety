@@ -25,21 +25,37 @@ RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" &&
     curl https://packages.diladele.com/diladele_pub.asc -s -o diladele_pub.asc && \
     APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add diladele_pub.asc && rm diladele_pub.asc && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    python3 -m pip install --upgrade pip --break-system-packages && \
-    python3 -m pip install wheel --break-system-packages && \
-    python3 -m pip install --break-system-packages \
-        django==4.1.2 \
-        pytz \
-        requests \
-        pandas \
-        PyYAML \
-        psutil \
-        tld \
-        jinja2 \
-        msal pyOpenSSL cryptography google-auth google-auth-oauthlib && \
-    python3 -m pip uninstall -y ldap ldap3 python-ldap || true && \
-    python3 -m pip install python-ldap --break-system-packages
-
+#    python3 -m pip install --upgrade pip --break-system-packages && \
+#    python3 -m pip install wheel --break-system-packages && \
+#    python3 -m pip install --break-system-packages \
+#        django==4.1.2 \
+#        pytz \
+#        requests \
+#        pandas \
+#        PyYAML \
+#        psutil \
+#        tld \
+#        jinja2 \
+#        msal pyOpenSSL cryptography google-auth google-auth-oauthlib && \
+#    python3 -m pip uninstall -y ldap ldap3 python-ldap || true && \
+#    python3 -m pip install python-ldap --break-system-packages
+    apt-get install -y --no-install-recommends \
+    python3-django \
+    python3-tz \
+    python3-requests \
+    python3-pandas \
+    python3-yaml \
+    python3-psutil \
+    python3-tld \
+    python3-jinja2 \
+    python3-openssl \
+    python3-cryptography \
+    python3-google-auth \
+    python3-ldap \
+    python3-dev \
+    python3.12-venv \
+    libjpeg-dev \
+    zlib1g-dev
 
 RUN echo "deb https://squid57.diladele.com/ubuntu/ focal main" > /etc/apt/sources.list.d/squid57.diladele.com.list && \
     apt-get update && apt-get install -y --no-install-recommends \
@@ -51,23 +67,52 @@ RUN echo "deb https://squid57.diladele.com/ubuntu/ focal main" > /etc/apt/source
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # get latest web safety and install it
-RUN curl https://www.diladele.com/pkg/websafety-core/${DDWS_VER}/amd64/release/${OSNAME}/websafety-${DDWS_VER}_amd64.deb -o websafety-core${DDWS_VER}_amd64.deb && \
-    curl https://www.diladele.com/pkg/websafety-ui/${DDWS_UI_VER}/amd64/release/${OSNAME}/websafety-ui-${DDWS_UI_VER}_amd64.deb -o websafety-ui-${DDWS_UI_VER}_amd64.deb && \
-    dpkg --install websafety-core${DDWS_VER}_amd64.deb && \
-    dpkg --install websafety-ui-${DDWS_UI_VER}_amd64.deb && \
+#RUN curl https://www.diladele.com/pkg/websafety-core/${DDWS_VER}/amd64/release/${OSNAME}/websafety-${DDWS_VER}_amd64.deb -o websafety-core${DDWS_VER}_amd64.deb && \
+#    curl https://www.diladele.com/pkg/websafety-ui/${DDWS_UI_VER}/amd64/release/${OSNAME}/websafety-ui-${DDWS_UI_VER}_amd64.deb -o websafety-ui-${DDWS_UI_VER}_amd64.deb && \
+#    dpkg --install websafety-core${DDWS_VER}_amd64.deb && \
+#    dpkg --install websafety-ui-${DDWS_UI_VER}_amd64.deb && \
+#    chown -R proxy:proxy /opt/websafety && \
+#    chown -R websafety:websafety /opt/websafety-ui && \
+#    rm -f websafety-core${DDWS_VER}_amd64.deb && \
+#    rm -f websafety-ui-${DDWS_UI_VER}_amd64.deb && \
+#    a2ensite websafety && \
+#    mkdir -p /var/run/apache2 && \
+#    mkdir -p /var/log/websafety && \
+#    sudo -u proxy python3 /opt/websafety-ui/var/console/generate.py --core && \
+#    sudo -u websafety python3 /opt/websafety-ui/var/console/generate.py --ui && \
+#    chown -R websafety:websafety /opt/websafety-ui && \
+#    touch /etc/crontab && mkdir -p /opt/websafety/var/reports && \
+#    mkdir -p /usr/share/squid/errors/templates/opt/websafety/etc/squid && \
+#    ln -s /opt/websafety/etc/squid/portal.html /usr/share/squid/errors/templates/opt/websafety/etc/squid/portal.html
+
+# Bloc 1: Download & Install
+RUN curl -fSL https://www.diladele.com/pkg/websafety-core/${DDWS_VER}/amd64/release/${OSNAME}/websafety-${DDWS_VER}_amd64.deb -o core.deb && \
+    curl -fSL https://www.diladele.com/pkg/websafety-ui/${DDWS_UI_VER}/amd64/release/${OSNAME}/websafety-ui-${DDWS_UI_VER}_amd64.deb -o ui.deb && \
+    apt-get update && \
+    apt-get install -y ./core.deb ./ui.deb && \
+    rm -f core.deb ui.deb
+
+# Bloc 2: Python Virtual Environment (03_venv.sh)
+RUN python3 -m venv /opt/websafety-ui/env && \
+    /opt/websafety-ui/env/bin/pip install --upgrade pip wheel && \
+    /opt/websafety-ui/env/bin/pip install -r /opt/websafety-ui/var/console/requirements.txt && \
+    # Préparation des dossiers pour éviter les erreurs de permissions
+    mkdir -p /opt/websafety-ui/var/db /opt/websafety-ui/var/logs /opt/websafety/var/reports && \
+    chown -R websafety:websafety /opt/websafety-ui && \
     chown -R proxy:proxy /opt/websafety && \
-    chown -R websafety:websafety /opt/websafety-ui && \
-    rm -f websafety-core${DDWS_VER}_amd64.deb && \
-    rm -f websafety-ui-${DDWS_UI_VER}_amd64.deb && \
+    # Génération des fichiers de base via le venv
+    sudo -u proxy /opt/websafety-ui/env/bin/python3 /opt/websafety-ui/var/console/generate.py --core && \
+    sudo -u websafety /opt/websafety-ui/env/bin/python3 /opt/websafety-ui/var/console/generate.py --ui
+
+# Bloc 3: Apache Integration & Final Links (04_integrate.sh)
+RUN a2enmod ssl && \
+    a2dissite 000-default && \
     a2ensite websafety && \
-    mkdir -p /var/run/apache2 && \
-    mkdir -p /var/log/websafety && \
-    sudo -u proxy python3 /opt/websafety-ui/var/console/generate.py --core && \
-    sudo -u websafety python3 /opt/websafety-ui/var/console/generate.py --ui && \
-    chown -R websafety:websafety /opt/websafety-ui && \
-    touch /etc/crontab && mkdir -p /opt/websafety/var/reports && \
+    mkdir -p /var/run/apache2 /var/log/websafety && \
+    # On s'assure que le lien symbolique écrase l'existant (-sf)
     mkdir -p /usr/share/squid/errors/templates/opt/websafety/etc/squid && \
-    ln -s /opt/websafety/etc/squid/portal.html /usr/share/squid/errors/templates/opt/websafety/etc/squid/portal.html
+    ln -sf /opt/websafety/etc/squid/portal.html /usr/share/squid/errors/templates/opt/websafety/etc/squid/portal.html && \
+    touch /etc/crontab
 
 RUN echo "websafety ALL=(root) NOPASSWD: /opt/websafety/bin/reload.sh, /opt/websafety/bin/restart.sh, /opt/websafety/bin/cluster.sh, /opt/websafety-ui/bin/certmgr.py, /opt/websafety-ui/bin/cachemgr.py, /usr/bin/tail, /opt/websafety-ui/bin/timezone.py, /opt/websafety-ui/bin/hostname.py, /opt/websafety-ui/bin/resolve.py, /opt/websafety-ui/bin/netmgr.py, /opt/websafety-ui/bin/fsmgr.py, /opt/websafety-ui/bin/cronmgr.py, /opt/websafety-ui/bin/logrotatemgr.py, /opt/websafety-ui/bin/confmgr.py" >> /etc/sudoers
 
