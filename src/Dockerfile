@@ -1,16 +1,17 @@
 #
 # Docker file for running Diladele Web Safety in one container
 #
-FROM phusion/baseimage:focal-1.2.0
+FROM phusion/baseimage:noble-1.0.0
 
 #MAINTAINER support@diladele.com
 
 # set configuration variables
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM xterm
-ENV DDWS_VER 8.5.0.C85E
-ENV DDWS_UI_VER 8.5.0.3ECC
-ENV OSNAME "ubuntu20"
+ENV DDWS_VER=9.7.0.7FA4
+ENV DDWS_UI_VER=9.7.0.D8C1
+ENV OSNAME=ubuntu24
+ENV DEBIAN_FRONTEND=noninteractive
 ENV WEBSAFETY_IN_DOCKER "True"
 
 # install python libs and apache with modwsgi
@@ -51,8 +52,8 @@ RUN echo "deb https://squid57.diladele.com/ubuntu/ focal main" > /etc/apt/source
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # get latest web safety and install it
-RUN curl https://packages.diladele.com/websafety-core/${DDWS_VER}/amd64/release/${OSNAME}/websafety-${DDWS_VER}_amd64.deb -o websafety-core${DDWS_VER}_amd64.deb && \
-    curl https://packages.diladele.com/websafety-ui/${DDWS_UI_VER}/amd64/release/${OSNAME}/websafety-ui-${DDWS_UI_VER}_amd64.deb -o websafety-ui-${DDWS_UI_VER}_amd64.deb && \
+RUN curl https://www.diladele.com/websafety-core/${DDWS_VER}/amd64/release/${OSNAME}/websafety-${DDWS_VER}_amd64.deb -o websafety-core${DDWS_VER}_amd64.deb && \
+    curl https://www.diladele.com/websafety-ui/${DDWS_UI_VER}/amd64/release/${OSNAME}/websafety-ui-${DDWS_UI_VER}_amd64.deb -o websafety-ui-${DDWS_UI_VER}_amd64.deb && \
     dpkg --install websafety-core${DDWS_VER}_amd64.deb && \
     dpkg --install websafety-ui-${DDWS_UI_VER}_amd64.deb && \
     chown -R proxy:proxy /opt/websafety && \
