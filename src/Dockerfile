@@ -72,18 +72,18 @@ RUN curl https://packages.diladele.com/websafety-core/${DDWS_VER}/amd64/release/
 RUN echo "websafety ALL=(root) NOPASSWD: /opt/websafety/bin/reload.sh, /opt/websafety/bin/restart.sh, /opt/websafety/bin/cluster.sh, /opt/websafety-ui/bin/certmgr.py, /opt/websafety-ui/bin/cachemgr.py, /usr/bin/tail, /opt/websafety-ui/bin/timezone.py, /opt/websafety-ui/bin/hostname.py, /opt/websafety-ui/bin/resolve.py, /opt/websafety-ui/bin/netmgr.py, /opt/websafety-ui/bin/fsmgr.py, /opt/websafety-ui/bin/cronmgr.py, /opt/websafety-ui/bin/logrotatemgr.py, /opt/websafety-ui/bin/confmgr.py" >> /etc/sudoers
 
 # copy required files
-COPY contents/squid.conf /etc/squid/squid.conf
-COPY contents/websafety_update /etc/cron.daily
-COPY contents/websafety_license /etc/cron.daily
-COPY contents/wsicapd /etc/service/wsicapd/run
-COPY contents/wsgsbd /etc/service/wsgsbd/run
-COPY contents/wsytgd /etc/service/wsytgd/run
-COPY contents/wssyncd /etc/service/wssyncd/run
-COPY contents/wsmond /etc/service/wsmond/run
-COPY contents/squid /etc/service/squid/run
-COPY contents/apache2 /etc/service/apache2/run
-COPY contents/reload.sh /opt/websafety/bin/reload.sh
-COPY contents/restart.sh /opt/websafety/bin/restart.sh
+COPY src/contents/squid.conf /etc/squid/squid.conf
+COPY src/contents/websafety_update /etc/cron.daily
+COPY src/contents/websafety_license /etc/cron.daily
+COPY src/contents/wsicapd /etc/service/wsicapd/run
+COPY src/contents/wsgsbd /etc/service/wsgsbd/run
+COPY src/contents/wsytgd /etc/service/wsytgd/run
+COPY src/contents/wssyncd /etc/service/wssyncd/run
+COPY src/contents/wsmond /etc/service/wsmond/run
+COPY src/contents/squid /etc/service/squid/run
+COPY src/contents/apache2 /etc/service/apache2/run
+COPY src/contents/reload.sh /opt/websafety/bin/reload.sh
+COPY src/contents/restart.sh /opt/websafety/bin/restart.sh
 
 # reset owner of installation path
 RUN chmod +x /opt/websafety/bin/* && \
