@@ -3,7 +3,7 @@
 #
 FROM phusion/baseimage:focal-1.2.0
 
-MAINTAINER support@diladele.com
+#MAINTAINER support@diladele.com
 
 # set configuration variables
 ENV DEBIAN_FRONTEND noninteractive
@@ -97,14 +97,14 @@ RUN chmod +x /opt/websafety/bin/* && \
              /etc/service/apache2/run
 
 # assign volumes
-VOLUME ["/opt/websafety/etc"]
-VOLUME ["/opt/websafety/var/spool"]
-VOLUME ["/opt/websafety/var/console"]
-VOLUME ["/opt/websafety/var/db"]
-VOLUME ["/opt/websafety/var/log"]
-VOLUME ["/opt/websafety/var/reports"]
-VOLUME ["/etc/squid"]
-VOLUME ["/var/spool"]
-VOLUME ["/var/log/squid"]
+#VOLUME ["/opt/websafety/etc"]
+#VOLUME ["/opt/websafety/var/spool"]
+#VOLUME ["/opt/websafety/var/console"]
+#VOLUME ["/opt/websafety/var/db"]
+#VOLUME ["/opt/websafety/var/log"]
+#VOLUME ["/opt/websafety/var/reports"]
+#VOLUME ["/etc/squid"]
+#VOLUME ["/var/spool"]
+#VOLUME ["/var/log/squid"]
 
 CMD ["/sbin/my_init"]
