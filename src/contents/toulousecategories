@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+import os
+import sys
+import tarfile
+import urllib.request
+import shutil
+import tempfile
+import django
+
+# --- CONFIGURATION ---
+URL_TOULOUSE = "https://dsi.ut-capitole.fr/blacklists/download/blacklists.tar.gz"
+DEST_DIR = "/opt/websafety/var/db/toulouse"
+WS_BUILD_DB = "/opt/websafety/bin/ws-build-db"
+WS_USER = "websafety"
+
+# Setup Django
+sys.path.append("/opt/websafety-ui/var/console")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "console.settings")
+django.setup()
+
+# Import du modèle spécifique identifié dans ton models.py
+from safety.models import CustomCategory
+
+def run_import():
+    print("🚀 Démarrage de l'importation Toulouse pour WebSafety 9.7...")
+    
+    if not os.path.exists(DEST_DIR):
+        os.makedirs(DEST_DIR, exist_ok=True)
+    
+    tmp_dir = tempfile.mkdtemp()
+    archive_path = os.path.join(tmp_dir, "blacklists.tar.gz")
+
+    try:
+        print("📥 Téléchargement de l'archive...")
+        with urllib.request.urlopen(URL_TOULOUSE) as response, open(archive_path, 'wb') as out_file:
+            shutil.copyfileobj(response, out_file)
+
+        print("📂 Extraction...")
+        with tarfile.open(archive_path, "r:gz") as tar:
+            tar.extractall(path=tmp_dir)
+
+        extract_root = os.path.join(tmp_dir, "blacklists")
+        
+        # On trie pour un affichage propre
+        categories = sorted([d for d in os.listdir(extract_root) if os.path.isdir(os.path.join(extract_root, d))])
+
+        for category in categories:
+            cat_path = os.path.join(extract_root, category)
+            domains_file = os.path.join(cat_path, "domains")
+            
+            if os.path.exists(domains_file):
+                # Formatage des noms
+                final_id = f"fr_{category.lower().replace('-', '_')}"
+                final_title = f"FR {category.capitalize()}"
+                text_dest = os.path.join(DEST_DIR, final_id)
+                db_dest = f"{text_dest}.db"
+                
+                # 1. Copie du fichier texte
+                shutil.copy2(domains_file, text_dest)
+                
+                # 2. Compilation binaire (indispensable pour les performances)
+                os.system(f"{WS_BUILD_DB} -i {text_dest} -o {db_dest} > /dev/null 2>&1")
+                
+                # 3. Injection Django dans le modèle CustomCategory
+                # Les champs correspondent exactement à ton models.py
+                obj, created = CustomCategory.objects.update_or_create(
+                    id=final_id,
+                    defaults={
+                        'title': final_title,
+                        'source_url': f"file://{text_dest}",
+                        'format': 'domains', # 'domains' = Domain name per line
+                        'comment': f'Import automatique Toulouse - {category}'
+                    }
+                )
+                print(f"   ✅ {final_title} ({final_id}) injecté.")
+
+        print("🔒 Finalisation des droits système...")
+        for root, dirs, files in os.walk(DEST_DIR):
+            for f in files:
+                p = os.path.join(root, f)
+                shutil.chown(p, WS_USER, WS_USER)
+                os.chmod(p, 0o664)
+
+        print("\n--- ✅ IMPORTATION RÉUSSIE ---")
+        print("1. Allez dans l'interface WebSafety.")
+        print("2. Vos catégories apparaissent dans 'Definition Files > Custom Categories'.")
+        print("3. Cliquez sur le bouton bleu 'Save and Restart' en haut à droite.")
+
+    finally:
+        shutil.rmtree(tmp_dir)
+
+if __name__ == "__main__":
+    run_import()

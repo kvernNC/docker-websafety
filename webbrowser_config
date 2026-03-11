@@ -1,0 +1,28 @@
+In recent years, it's harder to use an proxy that decrypt SSL than before.
+
+You need to tune your browser to allow it
+
+On PC:
+Firefox:
+* Add CA cert to firefox directly
+* in about:config
+** disable cert pinning verification: security.cert_pinning.enforcement_level = 0
+** disable Quic : network.http.http3.enable = false
+
+
+On Android :
+Firefox Nightly buid allow accessing to about:confug :
+* Add CA cert to android. this could be tricky, as some provider hide the option. Also option can also be remove from android if the device is under family link's parental control.
+* in firefox about:config
+** disable cert pinning verification: security.cert_pinning.enforcement_level = 0
+** disable Quic : network.http.http3.enable = false
+** allow firefox to use system certs: security.enterprise_roots.enabled
+* Also add the proxy via about:config as the option is removed in android
+** network.proxy.http = <ip of websafety svc>
+** network.proxy.http_port = 3128
+** network.proxy.ssl = <ip of websafety svc>
+** network.proxy.ssl_port = 3128
+** network.proxy.type = 1
+* enable firefox nightly secret options, by typing on firefox logo, in about firefox nightly parameters.
+** in secret settings, activate : use third-party CA certificates
+** force restart firefox app in android app list
