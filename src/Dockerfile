@@ -91,6 +91,7 @@ RUN chmod +x /opt/websafety/bin/* && \
              /etc/service/wsgsbd/run \
              /etc/service/wsytgd/run \
              /etc/service/wsmond/run \
+             /etc/service/wssyncd/run \
              /etc/service/apache2/run
 
 CMD ["/sbin/my_init"]

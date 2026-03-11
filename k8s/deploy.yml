@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websafety
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websafety
+  template:
+    metadata:
+      labels:
+        app: websafety
+    spec:
+      initContainers:
+      - name: config-init
+        image: ghcr.io/kvernnc/docker-websafety:latest
+        volumeMounts:
+        - name: websafety-core-vol
+          mountPath: /mnt/pvc/core
+        - name: websafety-ui-vol
+          mountPath: /mnt/pvc/ui
+
+      containers:
+      - name: websafety
+        image: ghcr.io/kvernnc/docker-websafety:latest
+        ports:
+        - containerPort: 3128
+          name: proxy
+        - containerPort: 80
+          name: http-admin
+        - containerPort: 443
+          name: https-admin
+        securityContext:
+          runAsUser: 0
+          capabilities:
+            add: ["NET_ADMIN", "NET_RAW"]
+        env:
+        - name: TIME_ZONE
+          value: "Pacific/Noumea"
+
+        volumeMounts:
+        - name: websafety-core-vol
+          mountPath: /opt/websafety
+        - name: websafety-ui-vol
+          mountPath: /opt/websafety-ui
+
+      volumes:
+      - name: websafety-core-vol
+        persistentVolumeClaim:
+          claimName: websafety-core-pvc
+      - name: websafety-ui-vol
+        persistentVolumeClaim:
+          claimName: websafety-ui-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: websafety-core-pvc
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: openebs-hostpath
+  resources:
+    requests:
+      storage: 32Mi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: websafety-ui-pvc
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: openebs-hostpath
+  resources:
+    requests:
+      storage: 300Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: websafety-svc
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  ports:
+    - name: proxy
+      port: 3128
+    - name: web
+      port: 80
+    - name: ssl
+      port: 443
+  selector:
+    app: websafety
