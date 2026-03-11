@@ -72,6 +72,7 @@ RUN echo "websafety ALL=(root) NOPASSWD: /opt/websafety/bin/reload.sh, /opt/webs
 COPY src/contents/squid.conf /etc/squid/squid.conf
 COPY src/contents/websafety_update /etc/cron.daily
 COPY src/contents/websafety_license /etc/cron.daily
+COPY src/contents/toulousecategories /etc/cron.daily
 COPY src/contents/wsicapd /etc/service/wsicapd/run
 COPY src/contents/wsgsbd /etc/service/wsgsbd/run
 COPY src/contents/wsytgd /etc/service/wsytgd/run
@@ -82,7 +83,7 @@ COPY src/contents/apache2 /etc/service/apache2/run
 COPY src/contents/reload.sh /opt/websafety/bin/reload.sh
 COPY src/contents/restart.sh /opt/websafety/bin/restart.sh
 
-# Final permissions
+# FIX permissions
 RUN chmod +x /opt/websafety/bin/* && \
     chmod +x /etc/cron.daily/websafety_update && \
     chmod u+s /opt/websafety/bin/* && \
@@ -99,5 +100,12 @@ RUN mkdir -p /opt/websafety-ui/var/stats /opt/websafety-ui/var/reports
 RUN sqlite3 /opt/websafety-ui/var/stats/realtime.sqlite "VACUUM;"
 RUN chown -R websafety:websafety /opt/websafety-ui/var/stats /opt/websafety-ui/var/reports && \
     chmod -R 775 /opt/websafety-ui/var/stats
+
+#FIX missing files
+RUN touch /opt/websafety/var/log/cron_update.log
+RUN touch /opt/websafety/var/log/wssyncd.log
+RUN touch /opt/websafety-ui/var/log/wsmond.log
+RUN touch /opt/websafety/var/log/wsicapd.log
+run touch /opt/websafety/var/log/wsytgd.log
 
 CMD ["/sbin/my_init"]
