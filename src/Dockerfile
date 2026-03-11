@@ -94,4 +94,10 @@ RUN chmod +x /opt/websafety/bin/* && \
              /etc/service/wssyncd/run \
              /etc/service/apache2/run
 
+#FIX missing sqlite
+RUN mkdir -p /opt/websafety-ui/var/stats /opt/websafety-ui/var/reports
+RUN sqlite3 /opt/websafety-ui/var/stats/realtime.sqlite "VACUUM;"
+RUN chown -R websafety:websafety /opt/websafety-ui/var/stats /opt/websafety-ui/var/reports && \
+    chmod -R 775 /opt/websafety-ui/var/stats
+
 CMD ["/sbin/my_init"]

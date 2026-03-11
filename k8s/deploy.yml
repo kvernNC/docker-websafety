@@ -15,11 +15,29 @@ spec:
       initContainers:
       - name: config-init
         image: ghcr.io/kvernnc/docker-websafety:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            # On vérifie sur le point de montage réel de l'initContainer
+            if [ ! -f /mnt/pvc/etc/license.pem ]; then
+              echo "Volume vide ou licence absente. Initialisation..."
+
+              # Copie récursive du contenu par défaut de l'image
+              cp -a /opt/websafety/etc/. /mnt/pvc/etc/
+              cp -a /opt/websafety/var/. /mnt/pvc/var/
+
+              # Fix des permissions pour être sûr que le container final puisse écrire
+              chown -R 100:101 /mnt/pvc/var # UID/GID typiques proxy/squid, à ajuster si besoin
+              echo "Initialisation terminée."
+            else
+              echo "Volume déjà peuplé."
+            fi
+
         volumeMounts:
-        - name: websafety-core-vol
-          mountPath: /mnt/pvc/core
-        - name: websafety-ui-vol
-          mountPath: /mnt/pvc/ui
+        - name: websafety-etc-vol
+          mountPath: /mnt/pvc/etc
+        - name: websafety-var-vol
+          mountPath: /mnt/pvc/var
 
       containers:
       - name: websafety
@@ -40,24 +58,24 @@ spec:
           value: "Pacific/Noumea"
 
         volumeMounts:
-        - name: websafety-core-vol
-          mountPath: /opt/websafety
-        - name: websafety-ui-vol
-          mountPath: /opt/websafety-ui
+        - name: websafety-etc-vol
+          mountPath: /opt/websafety/etc
+#        - name: websafety-var-vol
+#          mountPath: /opt/websafety-ui
 
       volumes:
-      - name: websafety-core-vol
+      - name: websafety-etc-vol
         persistentVolumeClaim:
-          claimName: websafety-core-pvc
-      - name: websafety-ui-vol
+          claimName: websafety-etc-pvc
+      - name: websafety-var-vol
         persistentVolumeClaim:
-          claimName: websafety-ui-pvc
+          claimName: websafety-var-pvc
 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: websafety-core-pvc
+  name: websafety-etc-pvc
 spec:
   accessModes: ["ReadWriteOnce"]
   storageClassName: openebs-hostpath
@@ -69,7 +87,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: websafety-ui-pvc
+  name: websafety-var-pvc
 spec:
   accessModes: ["ReadWriteOnce"]
   storageClassName: openebs-hostpath
