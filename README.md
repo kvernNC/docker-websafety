@@ -1,3 +1,11 @@
+This fork use vibe coding to:
+_ build image with git action
+_ upgrade dockerfile to include Web Safety 9.7
+_ adapt dockerfile to k8s specific needs
+
+
+Original: 
+
 Web Safety 8.5 in Docker with Squid 5.7
 =======================================
 
