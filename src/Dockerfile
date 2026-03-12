@@ -32,12 +32,11 @@ RUN curl https://www.diladele.com/pkg/websafety-core/${DDWS_VER}/amd64/release/$
     mv diladele_pub.asc.gpg /etc/apt/trusted.gpg.d/ && \
     echo "deb https://diladele.github.io/repo-squid-7_2_2-ubuntu-24_04/repo/ubuntu/ noble main" \
     > /etc/apt/sources.list.d/squid-7_2_2.diladele.github.io.list && \
-    apt update && apt install -y \
+    apt update && apt install -y --no-install-recommends  \
     squid-common \
     squid-openssl \
     libecap3 libecap3-dev && \
     mkdir -p /etc/systemd/system/squid.service.d && \
-    rm /etc/systemd/system/squid.service.d/override.conf && \
     echo "[Service]"         >> /etc/systemd/system/squid.service.d/override.conf && \
     echo "LimitNOFILE=65535" >> /etc/systemd/system/squid.service.d/override.conf && \
     update-alternatives --set squid /usr/sbin/squid-openssl && \
@@ -46,17 +45,14 @@ RUN curl https://www.diladele.com/pkg/websafety-core/${DDWS_VER}/amd64/release/$
     a2ensite websafety && \
     mkdir -p /usr/share/squid/errors/templates/opt/websafety/etc/squid && \
     ln -s /opt/websafety/etc/squid/portal.html /usr/share/squid/errors/templates/opt/websafety/etc/squid/portal.html && \
-    rm -rf /var/spool/squid/ssldb && \
     /usr/lib/squid/security_file_certgen -c -s /var/spool/squid/ssldb -M 4MB && \
     chown -R proxy:proxy /var/spool/squid/ssldb && \
     python3 -m venv /opt/websafety-ui/env && \
     /opt/websafety-ui/env/bin/pip install --upgrade pip wheel && \
     /opt/websafety-ui/env/bin/pip install -r /opt/websafety-ui/var/console/requirements.txt && \
-    # Préparation des dossiers et droits avant génération
     mkdir -p /opt/websafety-ui/var/db /opt/websafety-ui/var/logs /opt/websafety/var/reports && \
     chown -R websafety:websafety /opt/websafety-ui && \
     chown -R proxy:proxy /opt/websafety && \
-    # Génération via le python du venv
     /opt/websafety-ui/env/bin/pip3 install -r /opt/websafety-ui/var/console/requirements.txt && \
     sudo -u proxy /opt/websafety-ui/env/bin/python3 /opt/websafety-ui/var/console/generate.py --core && \
     sudo -u websafety /opt/websafety-ui/env/bin/python3 /opt/websafety-ui/var/console/generate.py --ui 
