@@ -85,7 +85,7 @@ COPY src/contents/restart.sh /opt/websafety/bin/restart.sh
 
 # FIX permissions
 RUN chmod +x /opt/websafety/bin/* && \
-    chmod +x /etc/cron.daily/websafety_update && \
+    chmod +x /etc/cron.daily/* && \
     chmod u+s /opt/websafety/bin/* && \
     chmod +x /etc/service/squid/run \
              /etc/service/wsicapd/run \
@@ -95,6 +95,15 @@ RUN chmod +x /opt/websafety/bin/* && \
              /etc/service/wssyncd/run \
              /etc/service/apache2/run
 
+# --- FIX FINAL DES PERMISSIONS ---
+# On s'assure que l'utilisateur websafety possède ses dossiers de travail
+RUN chown -R websafety:websafety /opt/websafety/var && \
+    chown -R websafety:websafety /opt/websafety-ui/var && \
+    # On nettoie les résidus de dossiers supervise qui pourraient être dans le repo git
+    find /etc/service -name "supervise" -type d -exec rm -rf {} + && \
+    # On s'assure que runit peut créer ses fichiers de contrôle
+    chmod -R 755 /etc/service            
+             
 #FIX missing sqlite
 RUN mkdir -p /opt/websafety-ui/var/stats /opt/websafety-ui/var/reports
 RUN sqlite3 /opt/websafety-ui/var/stats/realtime.sqlite "VACUUM;"
@@ -106,6 +115,6 @@ RUN touch /opt/websafety/var/log/cron_update.log
 RUN touch /opt/websafety/var/log/wssyncd.log
 RUN touch /opt/websafety-ui/var/log/wsmond.log
 RUN touch /opt/websafety/var/log/wsicapd.log
-run touch /opt/websafety/var/log/wsytgd.log
+RUN touch /opt/websafety/var/log/wsytgd.log
 
 CMD ["/sbin/my_init"]
