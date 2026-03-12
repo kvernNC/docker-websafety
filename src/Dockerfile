@@ -71,7 +71,7 @@ COPY src/contents/apache2 /etc/service/apache2/run
 COPY src/contents/reload.sh /opt/websafety/bin/reload.sh
 COPY src/contents/restart.sh /opt/websafety/bin/restart.sh
 COPY src/contents/squid.conf /etc/squid/squid.conf
-COPY src/contents/updateatboot /etc/init.d/update
+COPY src/contents/updateatboot /etc/my_init.d/99_async_updates
 
 
 # --- BLOC 5 : Préparation des données et SQLite ---
@@ -95,7 +95,7 @@ RUN chown -R proxy:proxy /opt/websafety && \
     find /etc/service -name "supervise" -type d -exec rm -rf {} + && \
     chmod -R 755 /etc/service && \
     chmod +x /etc/service/*/run && \
-    chmod +x /etc/init.d/update
+    chmod +x /etc/my_init.d/99_async_updates
 
 # Utilisation de l'init système de Phusion
 CMD ["/sbin/my_init"]
