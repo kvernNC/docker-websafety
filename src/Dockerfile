@@ -78,7 +78,7 @@ COPY src/contents/updateatboot /etc/my_init.d/99_async_updates
 # On crée les dossiers AVANT de fixer les permissions
 RUN mkdir -p /opt/websafety-ui/var/stats /opt/websafety-ui/var/reports /opt/websafety/var/log /opt/websafety/var/db && \
     sqlite3 /opt/websafety-ui/var/stats/realtime.sqlite "VACUUM;" && \
-    touch /opt/websafety/var/log/cron_update.log /opt/websafety/var/log/wssyncd.log
+    touch /opt/websafety/var/log/cron_update.log /opt/websafety/var/log/wsicapd.log /opt/websafety/var/log/wsgsbd.log /opt/websafety/var/log/wsytgd.log /opt/websafety/var/log/wssyncd.log /opt/websafety/var/log/wsmond.log
 
 # --- BLOC 6 : FIX FINAL DES PERMISSIONS (Indispensable pour Kubernetes) ---
 # On applique les droits globalement
