@@ -20,7 +20,7 @@ RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" &&
     python3-django python3-tz python3-requests python3-pandas python3-yaml \
     python3-psutil python3-tld python3-jinja2 python3-openssl \
     python3-cryptography python3-google-auth python3-ldap3 python3-certifi\
-    cron htop mc net-tools jq vim krb5-user
+    cron htop mc net-tools jq vim krb5-user python3-ldap
 
 # --- BLOC 2 : Follow manual install docs ---
 RUN curl https://www.diladele.com/pkg/websafety-core/${DDWS_VER}/amd64/release/${OSNAME}/websafety-${DDWS_VER}_amd64.deb -o websafety.deb && \
@@ -71,6 +71,8 @@ COPY src/contents/apache2 /etc/service/apache2/run
 COPY src/contents/reload.sh /opt/websafety/bin/reload.sh
 COPY src/contents/restart.sh /opt/websafety/bin/restart.sh
 COPY src/contents/squid.conf /etc/squid/squid.conf
+COPY src/contents/updateatboot /etc/init.d/update
+
 
 # --- BLOC 5 : Préparation des données et SQLite ---
 # On crée les dossiers AVANT de fixer les permissions
@@ -92,7 +94,8 @@ RUN chown -R proxy:proxy /opt/websafety && \
     # Nettoyage runit pour forcer une réinitialisation propre au démarrage
     find /etc/service -name "supervise" -type d -exec rm -rf {} + && \
     chmod -R 755 /etc/service && \
-    chmod +x /etc/service/*/run
+    chmod +x /etc/service/*/run && \
+    chmod +x /etc/init.d/update
 
 # Utilisation de l'init système de Phusion
 CMD ["/sbin/my_init"]

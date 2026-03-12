@@ -1,0 +1,16 @@
+#!/bin/bash
+# On groupe les commandes entre () et on met un seul & à la fin
+(
+  echo "--- Début des mises à jour asynchrones ---"
+  
+  # 1. Importation Toulouse
+  /etc/cron.daily/toulousecategories
+  
+  # 2. Mise à jour WebSafety (Signatures, etc.)
+  /etc/cron.daily/websafety_update
+  
+  # 3. Reload final pour que tout soit pris en compte
+  /opt/websafety/bin/reload.sh
+  
+  echo "--- Mises à jour terminées ---"
+) > /proc/1/fd/1 2>&1 &
