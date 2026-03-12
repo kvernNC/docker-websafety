@@ -27,11 +27,20 @@ RUN curl https://www.diladele.com/pkg/websafety-core/${DDWS_VER}/amd64/release/$
     dpkg -i websafety-ui.deb && rm websafety-ui.deb
 
 # --- BLOC 3 : Configuration Apache ---
-RUN a2dissite 000-default && \
-    ln -s /opt/websafety-ui/etc/apache2/websafety-ui.conf /etc/apache2/sites-available/websafety-ui.conf && \
-    a2ensite websafety-ui.conf && \
-    # On permet à apache d'écrire dans son dossier de logs pour éviter les erreurs au reload
-    chown -R www-data:www-data /var/log/apache2
+RUN a2enmod ssl && \
+    a2dissite 000-default && \
+    a2ensite websafety
+
+RUN python3 -m venv /opt/websafety-ui/env && \
+    /opt/websafety-ui/env/bin/pip install --upgrade pip wheel && \
+    /opt/websafety-ui/env/bin/pip install -r /opt/websafety-ui/var/console/requirements.txt && \
+    # Préparation des dossiers et droits avant génération
+    mkdir -p /opt/websafety-ui/var/db /opt/websafety-ui/var/logs /opt/websafety/var/reports && \
+    chown -R websafety:websafety /opt/websafety-ui && \
+    chown -R proxy:proxy /opt/websafety && \
+    # Génération via le python du venv
+    sudo -u proxy /opt/websafety-ui/env/bin/python3 /opt/websafety-ui/var/console/generate.py --core && \
+    sudo -u websafety /opt/websafety-ui/env/bin/python3 /opt/websafety-ui/var/console/generate.py --ui
 
 # --- BLOC 4 : Scripts et Services (Runit & Cron) ---
 # Note : Tes fichiers run sont maintenant "propres" (sans chown interne)
