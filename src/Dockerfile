@@ -21,9 +21,9 @@ RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" &&
     python3-cryptography python3-google-auth python3-ldap3 python3-certifi
 
 # --- BLOC 2 : Installation Web Safety (Core & UI) ---
-RUN curl https://www.diladele.com/pkg/websafety-core/$DDWS_VER/amd64/$OSNAME/websafety-$DDWS_VER-amd64.deb -o websafety.deb && \
+RUN curl https://www.diladele.com/pkg/websafety-core/${DDWS_VER}/amd64/release/${OSNAME}/websafety-${DDWS_VER}_amd64.deb -o websafety.deb && \
     dpkg -i websafety.deb && rm websafety.deb && \
-    curl https://www.diladele.com/pkg/websafety-ui/$DDWS_UI_VER/amd64/$OSNAME/websafety-ui-$DDWS_UI_VER-amd64.deb -o websafety-ui.deb && \
+    curl https://www.diladele.com/pkg/websafety-ui/${DDWS_UI_VER}/amd64/release/${OSNAME}/websafety-ui-${DDWS_UI_VER}_amd64.deb -o websafety-ui.deb && \
     dpkg -i websafety-ui.deb && rm websafety-ui.deb
 
 # --- BLOC 3 : Configuration Apache ---
