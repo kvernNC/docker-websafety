@@ -26,8 +26,8 @@ RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" &&
 RUN curl https://www.diladele.com/pkg/websafety-core/${DDWS_VER}/amd64/release/${OSNAME}/websafety-${DDWS_VER}_amd64.deb -o websafety.deb && \
     dpkg -i websafety.deb && rm websafety.deb && \
     curl https://www.diladele.com/pkg/websafety-ui/${DDWS_UI_VER}/amd64/release/${OSNAME}/websafety-ui-${DDWS_UI_VER}_amd64.deb -o websafety-ui.deb && \
-    dpkg -i websafety-ui.deb && rm websafety-ui.deb
-    wget https://www.diladele.com/pkg/diladele_pub.asc && \
+    dpkg -i websafety-ui.deb && rm websafety-ui.deb && \
+    curl https://www.diladele.com/pkg/diladele_pub.asc -o diladele_pub.asc && \
     cat diladele_pub.asc | gpg --dearmor -o diladele_pub.asc.gpg && \
     mv diladele_pub.asc.gpg /etc/apt/trusted.gpg.d/ && \
     echo "deb https://diladele.github.io/repo-squid-7_2_2-ubuntu-24_04/repo/ubuntu/ noble main" \
