@@ -63,6 +63,8 @@ RUN mkdir -p /opt/websafety-ui/var/stats /opt/websafety-ui/var/reports /opt/webs
     touch /opt/websafety/var/log/cron_update.log /opt/websafety/var/log/wssyncd.log
 
 # --- BLOC 6 : FIX FINAL DES PERMISSIONS (Indispensable pour Kubernetes) ---
+# FIX : Créer le lien symbolique pour le binaire de certification (indispensable pour Noble)
+RUN  ln -sf /usr/lib/squid/security_file_certgen /usr/lib/squid/security_file_certgen
 # On applique les droits globalement
 RUN chown -R websafety:websafety /opt/websafety && \
     chown -R websafety:websafety /opt/websafety-ui && \
